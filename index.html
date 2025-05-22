@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Romanian Verb Flashcards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Tailwind gray-100 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1rem;
+        }
+        .flashcard-container {
+            perspective: 1000px;
+            width: 90vw;
+            max-width: 500px;
+            height: 350px; /* Increased height for more content */
+            margin-bottom: 1.5rem;
+        }
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 0.75rem; /* Tailwind rounded-xl */
+        }
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            overflow-y: auto; /* Allow scrolling for more content */
+        }
+        .card-front {
+            background-color: #ffffff; /* Tailwind white */
+            color: #1f2937; /* Tailwind gray-800 */
+        }
+        .card-back {
+            background-color: #4f46e5; /* Tailwind indigo-600 */
+            color: #ffffff; /* Tailwind white */
+            transform: rotateY(180deg);
+        }
+        .verb-infinitive {
+            font-size: 2.25rem; /* Tailwind text-4xl */
+            font-weight: 700; /* Tailwind font-bold */
+        }
+        .meaning {
+            font-size: 1.25rem; /* Tailwind text-xl */
+            font-weight: 600; /* Tailwind font-semibold */
+            margin-bottom: 1rem;
+        }
+        .conjugation-title {
+            font-size: 1.125rem; /* Tailwind text-lg */
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            text-decoration: underline;
+        }
+        .conjugation-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr)); /* Two columns */
+            gap: 0.5rem;
+            width: 100%;
+            max-width: 300px; /* Limit width of conjugation for readability */
+            font-size: 0.875rem; /* Tailwind text-sm */
+        }
+        .conjugation-item {
+            text-align: left;
+        }
+        .pronoun {
+            font-weight: 500; /* Tailwind font-medium */
+            color: #e0e7ff; /* Tailwind indigo-100 for contrast on dark bg */
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+            justify-content: center;
+            gap: 0.75rem; /* Tailwind gap-3 */
+            margin-bottom: 1rem;
+        }
+        .control-button {
+            background-color: #3b82f6; /* Tailwind blue-500 */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem; /* Tailwind rounded-lg */
+            font-size: 1rem; /* Tailwind text-base */
+            font-weight: 500; /* Tailwind font-medium */
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        .control-button:hover {
+            background-color: #2563eb; /* Tailwind blue-600 */
+        }
+        .control-button:disabled {
+            background-color: #9ca3af; /* Tailwind gray-400 */
+            cursor: not-allowed;
+        }
+        .card-counter {
+            font-size: 0.875rem; /* Tailwind text-sm */
+            color: #4b5563; /* Tailwind gray-600 */
+        }
+        /* Custom scrollbar for card back if needed */
+        .card-back::-webkit-scrollbar {
+            width: 8px;
+        }
+        .card-back::-webkit-scrollbar-track {
+            background: #3730a3; /* Darker indigo for track */
+            border-radius: 0.75rem;
+        }
+        .card-back::-webkit-scrollbar-thumb {
+            background: #a5b4fc; /* Lighter indigo for thumb */
+            border-radius: 0.75rem;
+        }
+        .card-back::-webkit-scrollbar-thumb:hover {
+            background: #818cf8;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 400px) {
+            .verb-infinitive {
+                font-size: 1.875rem; /* Tailwind text-3xl */
+            }
+            .meaning {
+                font-size: 1.125rem; /* Tailwind text-lg */
+            }
+            .flashcard-container {
+                height: 400px; /* Slightly taller on small screens for readability */
+            }
+            .control-button {
+                padding: 0.5rem 1rem;
+                font-size: 0.875rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-700 mb-6 text-center">Romanian Verb Flashcards</h1>
+
+    <div class="flashcard-container">
+        <div class="flashcard" id="flashcard">
+            <div class="card-face card-front">
+                <p id="verb-infinitive" class="verb-infinitive">Așteaptă...</p>
+            </div>
+            <div class="card-face card-back">
+                <p id="verb-meaning" class="meaning"></p>
+                <p class="conjugation-title">Conjugări (Prezent Indicativ):</p>
+                <div id="conjugations" class="conjugation-grid">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="prev-button" class="control-button">Anterior</button>
+        <button id="flip-button" class="control-button">Întoarce</button>
+        <button id="next-button" class="control-button">Următor</button>
+    </div>
+    <button id="shuffle-button" class="control-button bg-green-500 hover:bg-green-600 mb-4">Amestecă</button>
+
+    <p id="card-counter" class="card-counter">Card 0 din 0</p>
+
+    <script>
+        // --- Verb Data ---
+        let verbsData = [
+            // Core & Extremely High-Frequency Verbs (First 20 from previous version)
+            { infinitive: "a fi", meaning: "to be", conjugations: { eu: "sunt", tu: "ești", el_ea: "este", noi: "suntem", voi: "sunteți", ei_ele: "sunt" }},
+            { infinitive: "a avea", meaning: "to have", conjugations: { eu: "am", tu: "ai", el_ea: "are", noi: "avem", voi: "aveți", ei_ele: "au" }},
+            { infinitive: "a vrea", meaning: "to want", conjugations: { eu: "vreau", tu: "vrei", el_ea: "vrea", noi: "vrem", voi: "vreți", ei_ele: "vor" }},
+            { infinitive: "a putea", meaning: "to be able (can)", conjugations: { eu: "pot", tu: "poți", el_ea: "poate", noi: "putem", voi: "puteți", ei_ele: "pot" }},
+            { infinitive: "a face", meaning: "to do/make", conjugations: { eu: "fac", tu: "faci", el_ea: "face", noi: "facem", voi: "faceți", ei_ele: "fac" }},
+            { infinitive: "a spune", meaning: "to say/tell", conjugations: { eu: "spun", tu: "spui", el_ea: "spune", noi: "spunem", voi: "spuneți", ei_ele: "spun" }},
+            { infinitive: "a merge", meaning: "to go", conjugations: { eu: "merg", tu: "mergi", el_ea: "merge", noi: "mergem", voi: "mergeți", ei_ele: "merg" }},
+            { infinitive: "a veni", meaning: "to come", conjugations: { eu: "vin", tu: "vii", el_ea: "vine", noi: "venim", voi: "veniți", ei_ele: "vin" }},
+            { infinitive: "a lua", meaning: "to take", conjugations: { eu: "iau", tu: "iei", el_ea: "ia", noi: "luăm", voi: "luați", ei_ele: "iau" }},
+            { infinitive: "a da", meaning: "to give", conjugations: { eu: "dau", tu: "dai", el_ea: "dă", noi: "dăm", voi: "dați", ei_ele: "dau" }},
+            { infinitive: "a vedea", meaning: "to see", conjugations: { eu: "văd", tu: "vezi", el_ea: "vede", noi: "vedem", voi: "vedeți", ei_ele: "văd" }},
+            { infinitive: "a auzi", meaning: "to hear", conjugations: { eu: "aud", tu: "auzi", el_ea: "aude", noi: "auzim", voi: "auziți", ei_ele: "aud" }},
+            { infinitive: "a ști", meaning: "to know (a fact)", conjugations: { eu: "știu", tu: "știi", el_ea: "știe", noi: "știm", voi: "știți", ei_ele: "știu" }},
+            { infinitive: "a crede", meaning: "to believe", conjugations: { eu: "cred", tu: "crezi", el_ea: "crede", noi: "credem", voi: "credeți", ei_ele: "cred" }},
+            { infinitive: "a trebui", meaning: "to have to, must", conjugations: { eu: "trebuie", tu: "trebuie", el_ea: "trebuie", noi: "trebuie", voi: "trebuie", ei_ele: "trebuie" }}, // Often invariable in present
+            { infinitive: "a mânca", meaning: "to eat", conjugations: { eu: "mănânc", tu: "mănânci", el_ea: "mănâncă", noi: "mâncăm", voi: "mâncați", ei_ele: "mănâncă" }},
+            { infinitive: "a bea", meaning: "to drink", conjugations: { eu: "beau", tu: "bei", el_ea: "bea", noi: "bem", voi: "beți", ei_ele: "beau" }},
+            { infinitive: "a lucra", meaning: "to work", conjugations: { eu: "lucrez", tu: "lucrezi", el_ea: "lucrează", noi: "lucrăm", voi: "lucrați", ei_ele: "lucrează" }},
+            { infinitive: "a vorbi", meaning: "to speak", conjugations: { eu: "vorbesc", tu: "vorbești", el_ea: "vorbește", noi: "vorbim", voi: "vorbiți", ei_ele: "vorbesc" }},
+            
+            // Verbs from #20 onwards
+            { infinitive: "a întreba", meaning: "to ask", conjugations: { eu: "întreb", tu: "întrebi", el_ea: "întreabă", noi: "întrebăm", voi: "întrebați", ei_ele: "întreabă" }},
+            { infinitive: "a răspunde", meaning: "to answer", conjugations: { eu: "răspund", tu: "răspunzi", el_ea: "răspunde", noi: "răspundem", voi: "răspundeți", ei_ele: "răspund" }},
+            { infinitive: "a înțelege", meaning: "to understand", conjugations: { eu: "înțeleg", tu: "înțelegi", el_ea: "înțelege", noi: "înțelegem", voi: "înțelegeți", ei_ele: "înțeleg" }},
+            { infinitive: "a sta", meaning: "to stay, to sit", conjugations: { eu: "stau", tu: "stai", el_ea: "stă", noi: "stăm", voi: "stați", ei_ele: "stau" }},
+            { infinitive: "a se uita", meaning: "to look, to watch", conjugations: { eu: "mă uit", tu: "te uiți", el_ea: "se uită", noi: "ne uităm", voi: "vă uitați", ei_ele: "se uită" }},
+            { infinitive: "a folosi", meaning: "to use", conjugations: { eu: "folosesc", tu: "folosești", el_ea: "folosește", noi: "folosim", voi: "folosiți", ei_ele: "folosesc" }},
+
+            // Very High-Frequency Verbs
+            { infinitive: "a ajunge", meaning: "to arrive, to be enough", conjugations: { eu: "ajung", tu: "ajungi", el_ea: "ajunge", noi: "ajungem", voi: "ajungeți", ei_ele: "ajung" }},
+            { infinitive: "a pleca", meaning: "to leave", conjugations: { eu: "plec", tu: "pleci", el_ea: "pleacă", noi: "plecăm", voi: "plecați", ei_ele: "pleacă" }},
+            { infinitive: "a începe", meaning: "to begin, to start", conjugations: { eu: "încep", tu: "începi", el_ea: "începe", noi: "începem", voi: "începeți", ei_ele: "încep" }},
+            { infinitive: "a termina", meaning: "to finish, to end", conjugations: { eu: "termin", tu: "termini", el_ea: "termină", noi: "terminăm", voi: "terminați", ei_ele: "termină" }},
+            { infinitive: "a scrie", meaning: "to write", conjugations: { eu: "scriu", tu: "scrii", el_ea: "scrie", noi: "scriem", voi: "scrieți", ei_ele: "scriu" }},
+            { infinitive: "a citi", meaning: "to read", conjugations: { eu: "citesc", tu: "citești", el_ea: "citește", noi: "citim", voi: "citiți", ei_ele: "citesc" }},
+            { infinitive: "a învăța", meaning: "to learn", conjugations: { eu: "învăț", tu: "înveți", el_ea: "învață", noi: "învățăm", voi: "învățați", ei_ele: "învață" }},
+            { infinitive: "a dormi", meaning: "to sleep", conjugations: { eu: "dorm", tu: "dormi", el_ea: "doarme", noi: "dormim", voi: "dormiți", ei_ele: "dorm" }},
+            { infinitive: "a deschide", meaning: "to open", conjugations: { eu: "deschid", tu: "deschizi", el_ea: "deschide", noi: "deschidem", voi: "deschideți", ei_ele: "deschid" }},
+            { infinitive: "a închide", meaning: "to close", conjugations: { eu: "închid", tu: "închizi", el_ea: "închide", noi: "închidem", voi: "închideți", ei_ele: "închid" }},
+            { infinitive: "a găsi", meaning: "to find", conjugations: { eu: "găsesc", tu: "găsești", el_ea: "găsește", noi: "găsim", voi: "găsiți", ei_ele: "găsesc" }},
+            { infinitive: "a pierde", meaning: "to lose", conjugations: { eu: "pierd", tu: "pierzi", el_ea: "pierde", noi: "pierdem", voi: "pierdeți", ei_ele: "pierd" }},
+            { infinitive: "a pune", meaning: "to put, to place", conjugations: { eu: "pun", tu: "pui", el_ea: "pune", noi: "punem", voi: "puneți", ei_ele: "pun" }},
+            { infinitive: "a scoate", meaning: "to take out", conjugations: { eu: "scot", tu: "scoți", el_ea: "scoate", noi: "scoatem", voi: "scoateți", ei_ele: "scot" }},
+            { infinitive: "a căuta", meaning: "to search for, to look for", conjugations: { eu: "caut", tu: "cauți", el_ea: "caută", noi: "căutăm", voi: "căutați", ei_ele: "caută" }},
+            { infinitive: "a primi", meaning: "to receive", conjugations: { eu: "primesc", tu: "primești", el_ea: "primește", noi: "primim", voi: "primiți", ei_ele: "primesc" }},
+            { infinitive: "a trimite", meaning: "to send", conjugations: { eu: "trimit", tu: "trimiți", el_ea: "trimite", noi: "trimitem", voi: "trimiteți", ei_ele: "trimit" }},
+            { infinitive: "a plăcea", meaning: "to like", conjugations: { eu: "îmi place", tu: "îți place", el_ea: "îi place", noi: "ne place", voi: "vă place", ei_ele: "le place" }}, // Dative construction
+            { infinitive: "a iubi", meaning: "to love", conjugations: { eu: "iubesc", tu: "iubești", el_ea: "iubește", noi: "iubim", voi: "iubiți", ei_ele: "iubesc" }},
+            { infinitive: "a urî", meaning: "to hate", conjugations: { eu: "urăsc", tu: "urăști", el_ea: "urăște", noi: "urâm", voi: "urâți", ei_ele: "urăsc" }},
+            { infinitive: "a ajuta", meaning: "to help", conjugations: { eu: "ajut", tu: "ajuți", el_ea: "ajută", noi: "ajutăm", voi: "ajutați", ei_ele: "ajută" }},
+            { infinitive: "a suna", meaning: "to call (phone), to ring", conjugations: { eu: "sun", tu: "suni", el_ea: "sună", noi: "sunăm", voi: "sunați", ei_ele: "sună" }},
+            { infinitive: "a cumpăra", meaning: "to buy", conjugations: { eu: "cumpăr", tu: "cumperi", el_ea: "cumpără", noi: "cumpărăm", voi: "cumpărați", ei_ele: "cumpără" }},
+            { infinitive: "a vinde", meaning: "to sell", conjugations: { eu: "vând", tu: "vinzi", el_ea: "vinde", noi: "vindem", voi: "vindeți", ei_ele: "vând" }},
+            { infinitive: "a plăti", meaning: "to pay", conjugations: { eu: "plătesc", tu: "plătești", el_ea: "plătește", noi: "plătim", voi: "plătiți", ei_ele: "plătesc" }},
+            { infinitive: "a intra", meaning: "to enter", conjugations: { eu: "intru", tu: "intri", el_ea: "intră", noi: "intrăm", voi: "intrați", ei_ele: "intră" }},
+            { infinitive: "a ieși", meaning: "to exit, to go out", conjugations: { eu: "ies", tu: "ieși", el_ea: "iese", noi: "ieșim", voi: "ieșiți", ei_ele: "ies" }},
+            { infinitive: "a urca", meaning: "to go up, to climb", conjugations: { eu: "urc", tu: "urci", el_ea: "urcă", noi: "urcăm", voi: "urcați", ei_ele: "urcă" }},
+            { infinitive: "a coborî", meaning: "to go down, to descend", conjugations: { eu: "cobor", tu: "cobori", el_ea: "coboară", noi: "coborâm", voi: "coborâți", ei_ele: "coboară" }},
+            { infinitive: "a încerca", meaning: "to try", conjugations: { eu: "încerc", tu: "încerci", el_ea: "încearcă", noi: "încercăm", voi: "încercați", ei_ele: "încearcă" }},
+            { infinitive: "a aștepta", meaning: "to wait", conjugations: { eu: "aștept", tu: "aștepți", el_ea: "așteaptă", noi: "așteptăm", voi: "așteptați", ei_ele: "așteaptă" }},
+            { infinitive: "a se gândi", meaning: "to think", conjugations: { eu: "mă gândesc", tu: "te gândești", el_ea: "se gândește", noi: "ne gândim", voi: "vă gândiți", ei_ele: "se gândesc" }},
+            { infinitive: "a simți", meaning: "to feel", conjugations: { eu: "simt", tu: "simți", el_ea: "simte", noi: "simțim", voi: "simțiți", ei_ele: "simt" }},
+            { infinitive: "a se simți", meaning: "to feel (oneself)", conjugations: { eu: "mă simt", tu: "te simți", el_ea: "se simte", noi: "ne simțim", voi: "vă simțiți", ei_ele: "se simt" }},
+            { infinitive: "a duce", meaning: "to carry, to take (to)", conjugations: { eu: "duc", tu: "duci", el_ea: "duce", noi: "ducem", voi: "duceți", ei_ele: "duc" }},
+            { infinitive: "a aduce", meaning: "to bring", conjugations: { eu: "aduc", tu: "aduci", el_ea: "aduce", noi: "aducem", voi: "aduceți", ei_ele: "aduc" }},
+            { infinitive: "a lăsa", meaning: "to let, to leave (behind)", conjugations: { eu: "las", tu: "lași", el_ea: "lasă", noi: "lăsăm", voi: "lăsați", ei_ele: "lasă" }},
+            { infinitive: "a părea", meaning: "to seem", conjugations: { eu: "par", tu: "pari", el_ea: "pare", noi: "părem", voi: "păreți", ei_ele: "par" }},
+            { infinitive: "a deveni", meaning: "to become", conjugations: { eu: "devin", tu: "devii", el_ea: "devine", noi: "devenim", voi: "deveniți", ei_ele: "devin" }},
+            { infinitive: "a trăi", meaning: "to live", conjugations: { eu: "trăiesc", tu: "trăiești", el_ea: "trăiește", noi: "trăim", voi: "trăiți", ei_ele: "trăiesc" }},
+            { infinitive: "a muri", meaning: "to die", conjugations: { eu: "mor", tu: "mori", el_ea: "moare", noi: "murim", voi: "muriți", ei_ele: "mor" }},
+            { infinitive: "a se naște", meaning: "to be born", conjugations: { eu: "mă nasc", tu: "te naști", el_ea: "se naște", noi: "ne naștem", voi: "vă nașteți", ei_ele: "se nasc" }},
+            { infinitive: "a conduce", meaning: "to drive, to lead", conjugations: { eu: "conduc", tu: "conduci", el_ea: "conduce", noi: "conducem", voi: "conduceți", ei_ele: "conduc" }},
+            { infinitive: "a alerga", meaning: "to run", conjugations: { eu: "alerg", tu: "alergi", el_ea: "aleargă", noi: "alergăm", voi: "alergați", ei_ele: "aleargă" }},
+            { infinitive: "a se juca", meaning: "to play", conjugations: { eu: "mă joc", tu: "te joci", el_ea: "se joacă", noi: "ne jucăm", voi: "vă jucați", ei_ele: "se joacă" }},
+            { infinitive: "a cânta", meaning: "to sing", conjugations: { eu: "cânt", tu: "cânți", el_ea: "cântă", noi: "cântăm", voi: "cântați", ei_ele: "cântă" }},
+            { infinitive: "a dansa", meaning: "to dance", conjugations: { eu: "dansez", tu: "dansezi", el_ea: "dansează", noi: "dansăm", voi: "dansați", ei_ele: "dansează" }},
+            { infinitive: "a zice", meaning: "to say", conjugations: { eu: "zic", tu: "zici", el_ea: "zice", noi: "zicem", voi: "ziceți", ei_ele: "zic" }},
+            { infinitive: "a se duce", meaning: "to go (reflexive)", conjugations: { eu: "mă duc", tu: "te duci", el_ea: "se duce", noi: "ne ducem", voi: "vă duceți", ei_ele: "se duc" }},
+            { infinitive: "a se întoarce", meaning: "to return", conjugations: { eu: "mă întorc", tu: "te întorci", el_ea: "se întoarce", noi: "ne întoarcem", voi: "vă întoarceți", ei_ele: "se întorc" }},
+
+            // High-Frequency & Essential Verbs
+            { infinitive: "a chema", meaning: "to call (name, summon)", conjugations: { eu: "chem", tu: "chemi", el_ea: "cheamă", noi: "chemăm", voi: "chemați", ei_ele: "cheamă" }},
+            { infinitive: "a se numi", meaning: "to be named", conjugations: { eu: "mă numesc", tu: "te numești", el_ea: "se numește", noi: "ne numim", voi: "vă numiți", ei_ele: "se numesc" }},
+            { infinitive: "a se întâmpla", meaning: "to happen", conjugations: { eu: "(se) întâmplă", tu: "(se) întâmplă", el_ea: "se întâmplă", noi: "(se) întâmplă", voi: "(se) întâmplă", ei_ele: "se întâmplă" }}, // Impersonal usage common
+            { infinitive: "a se bucura", meaning: "to be glad", conjugations: { eu: "mă bucur", tu: "te bucuri", el_ea: "se bucură", noi: "ne bucurăm", voi: "vă bucurați", ei_ele: "se bucură" }},
+            { infinitive: "a uita", meaning: "to forget", conjugations: { eu: "uit", tu: "uiți", el_ea: "uită", noi: "uităm", voi: "uitați", ei_ele: "uită" }},
+            { infinitive: "a-și aminti", meaning: "to remember", conjugations: { eu: "îmi amintesc", tu: "îți amintești", el_ea: "își amintește", noi: "ne amintim", voi: "vă amintiți", ei_ele: "își amintesc" }},
+            { infinitive: "a cunoaște", meaning: "to know (person/place)", conjugations: { eu: "cunosc", tu: "cunoști", el_ea: "cunoaște", noi: "cunoaștem", voi: "cunoașteți", ei_ele: "cunosc" }},
+            { infinitive: "a recunoaște", meaning: "to recognize", conjugations: { eu: "recunosc", tu: "recunoști", el_ea: "recunoaște", noi: "recunoaștem", voi: "recunoașteți", ei_ele: "recunosc" }},
+            { infinitive: "a hotărî", meaning: "to decide", conjugations: { eu: "hotărăsc", tu: "hotărăști", el_ea: "hotărăște", noi: "hotărâm", voi: "hotărâți", ei_ele: "hotărăsc" }},
+            { infinitive: "a spera", meaning: "to hope", conjugations: { eu: "sper", tu: "speri", el_ea: "speră", noi: "sperăm", voi: "sperați", ei_ele: "speră" }},
+            { infinitive: "a promite", meaning: "to promise", conjugations: { eu: "promit", tu: "promiți", el_ea: "promite", noi: "promitem", voi: "promiteți", ei_ele: "promit" }},
+            { infinitive: "a minți", meaning: "to lie", conjugations: { eu: "mint", tu: "minți", el_ea: "minte", noi: "mințim", voi: "mințiți", ei_ele: "mint" }},
+            { infinitive: "a tăcea", meaning: "to be silent", conjugations: { eu: "tac", tu: "taci", el_ea: "tace", noi: "tăcem", voi: "tăceți", ei_ele: "tac" }},
+            { infinitive: "a plânge", meaning: "to cry", conjugations: { eu: "plâng", tu: "plângi", el_ea: "plânge", noi: "plângem", voi: "plângeți", ei_ele: "plâng" }},
+            { infinitive: "a râde", meaning: "to laugh", conjugations: { eu: "râd", tu: "râzi", el_ea: "râde", noi: "râdem", voi: "râdeți", ei_ele: "râd" }},
+            { infinitive: "a zâmbi", meaning: "to smile", conjugations: { eu: "zâmbesc", tu: "zâmbești", el_ea: "zâmbește", noi: "zâmbim", voi: "zâmbiți", ei_ele: "zâmbesc" }},
+            { infinitive: "a privi", meaning: "to watch, to gaze", conjugations: { eu: "privesc", tu: "privești", el_ea: "privește", noi: "privim", voi: "priviți", ei_ele: "privesc" }},
+            { infinitive: "a atinge", meaning: "to touch", conjugations: { eu: "ating", tu: "atingi", el_ea: "atinge", noi: "atingem", voi: "atingeți", ei_ele: "ating" }},
+            { infinitive: "a lovi", meaning: "to hit", conjugations: { eu: "lovesc", tu: "lovești", el_ea: "lovește", noi: "lovim", voi: "loviți", ei_ele: "lovesc" }},
+            { infinitive: "a cădea", meaning: "to fall", conjugations: { eu: "cad", tu: "cazi", el_ea: "cade", noi: "cădem", voi: "cădeți", ei_ele: "cad" }},
+            { infinitive: "a ridica", meaning: "to lift, to raise", conjugations: { eu: "ridic", tu: "ridici", el_ea: "ridică", noi: "ridicăm", voi: "ridicați", ei_ele: "ridică" }},
+            { infinitive: "a se ridica", meaning: "to get up", conjugations: { eu: "mă ridic", tu: "te ridici", el_ea: "se ridică", noi: "ne ridicăm", voi: "vă ridicați", ei_ele: "se ridică" }},
+            { infinitive: "a se scula", meaning: "to get up (from bed)", conjugations: { eu: "mă scol", tu: "te scoli", el_ea: "se scoală", noi: "ne sculăm", voi: "vă sculați", ei_ele: "se scoală" }},
+            { infinitive: "a așeza", meaning: "to place, to seat", conjugations: { eu: "așez", tu: "așezi", el_ea: "așază", noi: "așezăm", voi: "așezați", ei_ele: "așază" }},
+            { infinitive: "a se așeza", meaning: "to sit down", conjugations: { eu: "mă așez", tu: "te așezi", el_ea: "se așază", noi: "ne așezăm", voi: "vă așezați", ei_ele: "se așază" }},
+            { infinitive: "a păstra", meaning: "to keep", conjugations: { eu: "păstrez", tu: "păstrezi", el_ea: "păstrează", noi: "păstrăm", voi: "păstrați", ei_ele: "păstrează" }},
+            { infinitive: "a schimba", meaning: "to change", conjugations: { eu: "schimb", tu: "schimbi", el_ea: "schimbă", noi: "schimbăm", voi: "schimbați", ei_ele: "schimbă" }},
+            { infinitive: "a apărea", meaning: "to appear", conjugations: { eu: "apar", tu: "apari", el_ea: "apare", noi: "apărem", voi: "apăreți", ei_ele: "apar" }},
+            { infinitive: "a dispărea", meaning: "to disappear", conjugations: { eu: "dispar", tu: "dispari", el_ea: "dispare", noi: "dispărem", voi: "dispăreți", ei_ele: "dispar" }},
+            { infinitive: "a construi", meaning: "to build", conjugations: { eu: "construiesc", tu: "construiești", el_ea: "construiește", noi: "construim", voi: "construiți", ei_ele: "construiesc" }},
+            { infinitive: "a distruge", meaning: "to destroy", conjugations: { eu: "distrug", tu: "distrugi", el_ea: "distruge", noi: "distrugem", voi: "distrugeți", ei_ele: "distrug" }},
+            { infinitive: "a repara", meaning: "to repair", conjugations: { eu: "repar", tu: "repari", el_ea: "repară", noi: "reparăm", voi: "reparați", ei_ele: "repară" }},
+            { infinitive: "a greși", meaning: "to make a mistake", conjugations: { eu: "greșesc", tu: "greșești", el_ea: "greșește", noi: "greșim", voi: "greșiți", ei_ele: "greșesc" }},
+            { infinitive: "a ierta", meaning: "to forgive", conjugations: { eu: "iert", tu: "ierți", el_ea: "iartă", noi: "iertăm", voi: "iertați", ei_ele: "iartă" }},
+            { infinitive: "a mulțumi", meaning: "to thank", conjugations: { eu: "mulțumesc", tu: "mulțumești", el_ea: "mulțumește", noi: "mulțumim", voi: "mulțumiți", ei_ele: "mulțumesc" }},
+            { infinitive: "a saluta", meaning: "to greet", conjugations: { eu: "salut", tu: "saluți", el_ea: "salută", noi: "salutăm", voi: "salutați", ei_ele: "salută" }},
+            { infinitive: "a vizita", meaning: "to visit", conjugations: { eu: "vizitez", tu: "vizitezi", el_ea: "vizitează", noi: "vizităm", voi: "vizitați", ei_ele: "vizitează" }},
+            { infinitive: "a invita", meaning: "to invite", conjugations: { eu: "invit", tu: "inviți", el_ea: "invită", noi: "invităm", voi: "invitați", ei_ele: "invită" }},
+            { infinitive: "a accepta", meaning: "to accept", conjugations: { eu: "accept", tu: "accepți", el_ea: "acceptă", noi: "acceptăm", voi: "acceptați", ei_ele: "acceptă" }},
+            { infinitive: "a refuza", meaning: "to refuse", conjugations: { eu: "refuz", tu: "refuzi", el_ea: "refuză", noi: "refuzăm", voi: "refuzați", ei_ele: "refuză" }},
+            { infinitive: "a explica", meaning: "to explain", conjugations: { eu: "explic", tu: "explici", el_ea: "explică", noi: "explicăm", voi: "explicați", ei_ele: "explică" }},
+            { infinitive: "a arăta", meaning: "to show", conjugations: { eu: "arăt", tu: "arăți", el_ea: "arată", noi: "arătăm", voi: "arătați", ei_ele: "arată" }},
+            { infinitive: "a cere", meaning: "to ask for, to request", conjugations: { eu: "cer", tu: "ceri", el_ea: "cere", noi: "cerem", voi: "cereți", ei_ele: "cer" }},
+            { infinitive: "a oferi", meaning: "to offer", conjugations: { eu: "ofer", tu: "oferi", el_ea: "oferă", noi: "oferim", voi: "oferiți", ei_ele: "oferă" }},
+            { infinitive: "a prefera", meaning: "to prefer", conjugations: { eu: "prefer", tu: "preferi", el_ea: "preferă", noi: "preferăm", voi: "preferați", ei_ele: "preferă" }},
+            { infinitive: "a alege", meaning: "to choose", conjugations: { eu: "aleg", tu: "alegi", el_ea: "alege", noi: "alegem", voi: "alegeți", ei_ele: "aleg" }},
+            { infinitive: "a continua", meaning: "to continue", conjugations: { eu: "continuu", tu: "continui", el_ea: "continuă", noi: "continuăm", voi: "continuați", ei_ele: "continuă" }},
+            { infinitive: "a opri", meaning: "to stop (transitive)", conjugations: { eu: "opresc", tu: "oprești", el_ea: "oprește", noi: "oprim", voi: "opriți", ei_ele: "opresc" }},
+            { infinitive: "a se opri", meaning: "to stop (intransitive)", conjugations: { eu: "mă opresc", tu: "te oprești", el_ea: "se oprește", noi: "ne oprim", voi: "vă opriți", ei_ele: "se opresc" }},
+            { infinitive: "a porni", meaning: "to start (engine), set off", conjugations: { eu: "pornesc", tu: "pornești", el_ea: "pornește", noi: "pornim", voi: "porniți", ei_ele: "pornesc" }},
+            // a conduce (o mașină) - already listed as a conduce
+            { infinitive: "a călători", meaning: "to travel", conjugations: { eu: "călătoresc", tu: "călătorești", el_ea: "călătorește", noi: "călătorim", voi: "călătoriți", ei_ele: "călătoresc" }},
+            { infinitive: "a înota", meaning: "to swim", conjugations: { eu: "înot", tu: "înoți", el_ea: "înoată", noi: "înotăm", voi: "înotați", ei_ele: "înoată" }},
+
+            // Common & Useful Verbs (Expanding Core Communication)
+            { infinitive: "a se îmbrăca", meaning: "to get dressed", conjugations: { eu: "mă îmbrac", tu: "te îmbraci", el_ea: "se îmbracă", noi: "ne îmbrăcăm", voi: "vă îmbrăcați", ei_ele: "se îmbracă" }},
+            { infinitive: "a se dezbrăca", meaning: "to get undressed", conjugations: { eu: "mă dezbrac", tu: "te dezbraci", el_ea: "se dezbracă", noi: "ne dezbrăcăm", voi: "vă dezbrăcați", ei_ele: "se dezbracă" }},
+            { infinitive: "a se spăla", meaning: "to wash oneself", conjugations: { eu: "mă spăl", tu: "te speli", el_ea: "se spală", noi: "ne spălăm", voi: "vă spălați", ei_ele: "se spălă" }},
+            { infinitive: "a spăla", meaning: "to wash (something)", conjugations: { eu: "spăl", tu: "speli", el_ea: "spală", noi: "spălăm", voi: "spălați", ei_ele: "spală" }},
+            { infinitive: "a curăța", meaning: "to clean", conjugations: { eu: "curăț", tu: "curăți", el_ea: "curăță", noi: "curățăm", voi: "curățați", ei_ele: "curăță" }},
+            { infinitive: "a găti", meaning: "to cook", conjugations: { eu: "gătesc", tu: "gătești", el_ea: "gătește", noi: "gătim", voi: "gătiți", ei_ele: "gătesc" }},
+            { infinitive: "a tăia", meaning: "to cut", conjugations: { eu: "tai", tu: "tai", el_ea: "taie", noi: "tăiem", voi: "tăiați", ei_ele: "taie" }},
+            // a bea - already listed
+            { infinitive: "a fuma", meaning: "to smoke", conjugations: { eu: "fumez", tu: "fumezi", el_ea: "fumează", noi: "fumăm", voi: "fumați", ei_ele: "fumează" }},
+            { infinitive: "a se odihni", meaning: "to rest", conjugations: { eu: "mă odihnesc", tu: "te odihnești", el_ea: "se odihnește", noi: "ne odihnim", voi: "vă odihniți", ei_ele: "se odihnesc" }},
+            { infinitive: "a visa", meaning: "to dream", conjugations: { eu: "visez", tu: "visezi", el_ea: "visează", noi: "visăm", voi: "visați", ei_ele: "visează" }},
+            { infinitive: "a se trezi", meaning: "to wake up", conjugations: { eu: "mă trezesc", tu: "te trezești", el_ea: "se trezește", noi: "ne trezim", voi: "vă treziți", ei_ele: "se trezesc" }},
+            { infinitive: "a organiza", meaning: "to organize", conjugations: { eu: "organizez", tu: "organizezi", el_ea: "organizează", noi: "organizăm", voi: "organizați", ei_ele: "organizează" }},
+            { infinitive: "a participa", meaning: "to participate", conjugations: { eu: "particip", tu: "participi", el_ea: "participă", noi: "participăm", voi: "participați", ei_ele: "participă" }},
+            { infinitive: "a câștiga", meaning: "to win, to earn", conjugations: { eu: "câștig", tu: "câștigi", el_ea: "câștigă", noi: "câștigăm", voi: "câștigați", ei_ele: "câștigă" }},
+            { infinitive: "a cheltui", meaning: "to spend (money)", conjugations: { eu: "cheltuiesc", tu: "cheltuiești", el_ea: "cheltuiește", noi: "cheltuim", voi: "cheltuiți", ei_ele: "cheltuiesc" }},
+            { infinitive: "a economisi", meaning: "to save (money)", conjugations: { eu: "economisesc", tu: "economisești", el_ea: "economisește", noi: "economisim", voi: "economisiți", ei_ele: "economisesc" }},
+            { infinitive: "a împrumuta", meaning: "to borrow, to lend", conjugations: { eu: "împrumut", tu: "împrumuți", el_ea: "împrumută", noi: "împrumutăm", voi: "împrumutați", ei_ele: "împrumută" }},
+            { infinitive: "a preda", meaning: "to teach, to hand over", conjugations: { eu: "predau", tu: "predai", el_ea: "predă", noi: "predăm", voi: "predați", ei_ele: "predau" }},
+            { infinitive: "a studia", meaning: "to study", conjugations: { eu: "studiez", tu: "studiezi", el_ea: "studiază", noi: "studiem", voi: "studiați", ei_ele: "studiază" }},
+            { infinitive: "a repeta", meaning: "to repeat", conjugations: { eu: "repet", tu: "repeți", el_ea: "repetă", noi: "repetăm", voi: "repetați", ei_ele: "repetă" }},
+            { infinitive: "a corecta", meaning: "to correct", conjugations: { eu: "corectez", tu: "corectezi", el_ea: "corectează", noi: "corectăm", voi: "corectați", ei_ele: "corectează" }},
+            // a suna (la ușă) - same as a suna (phone)
+            // a intra (în casă) - same as a intra
+            // a ieși (afară) - same as a ieși
+            { infinitive: "a însemna", meaning: "to mean, to signify", conjugations: { eu: "însemn", tu: "însemni", el_ea: "înseamnă", noi: "însemnăm", voi: "însemnați", ei_ele: "înseamnă" }},
+            { infinitive: "a conta", meaning: "to count, to matter", conjugations: { eu: "contez", tu: "contezi", el_ea: "contează", noi: "contăm", voi: "contați", ei_ele: "contează" }},
+            { infinitive: "a depinde (de)", meaning: "to depend (on)", conjugations: { eu: "depind", tu: "depinzi", el_ea: "depinde", noi: "depindem", voi: "depindeți", ei_ele: "depind" }},
+            { infinitive: "a reuși", meaning: "to succeed", conjugations: { eu: "reușesc", tu: "reușești", el_ea: "reușește", noi: "reușim", voi: "reușiți", ei_ele: "reușesc" }},
+            { infinitive: "a eșua", meaning: "to fail", conjugations: { eu: "eșuez", tu: "eșuezi", el_ea: "eșuează", noi: "eșuăm", voi: "eșuați", ei_ele: "eșuează" }},
+            { infinitive: "a exista", meaning: "to exist", conjugations: { eu: "exist", tu: "exiști", el_ea: "există", noi: "existăm", voi: "existați", ei_ele: "există" }},
+            { infinitive: "a se teme (de)", meaning: "to be afraid (of)", conjugations: { eu: "mă tem", tu: "te temi", el_ea: "se teme", noi: "ne temem", voi: "vă temeți", ei_ele: "se tem" }},
+            { infinitive: "a proteja", meaning: "to protect", conjugations: { eu: "protejez", tu: "protejezi", el_ea: "protejează", noi: "protejăm", voi: "protejați", ei_ele: "protejează" }},
+            { infinitive: "a ataca", meaning: "to attack", conjugations: { eu: "atac", tu: "ataci", el_ea: "atacă", noi: "atacăm", voi: "atacați", ei_ele: "atacă" }},
+            { infinitive: "a apăra", meaning: "to defend", conjugations: { eu: "apăr", tu: "aperi", el_ea: "apără", noi: "apărăm", voi: "apărați", ei_ele: "apără" }},
+            { infinitive: "a fugi", meaning: "to flee, to run away", conjugations: { eu: "fug", tu: "fugi", el_ea: "fuge", noi: "fugim", voi: "fugiți", ei_ele: "fug" }},
+            { infinitive: "a se ascunde", meaning: "to hide (oneself)", conjugations: { eu: "mă ascund", tu: "te ascunzi", el_ea: "se ascunde", noi: "ne ascundem", voi: "vă ascundeți", ei_ele: "se ascund" }},
+            { infinitive: "a prinde", meaning: "to catch", conjugations: { eu: "prind", tu: "prinzi", el_ea: "prinde", noi: "prindem", voi: "prindeți", ei_ele: "prind" }},
+            { infinitive: "a elibera", meaning: "to free, to release", conjugations: { eu: "eliberez", tu: "eliberezi", el_ea: "eliberează", noi: "eliberăm", voi: "eliberați", ei_ele: "eliberează" }},
+            { infinitive: "a împinge", meaning: "to push", conjugations: { eu: "împing", tu: "împingi", el_ea: "împinge", noi: "împingem", voi: "împingeți", ei_ele: "împing" }},
+            { infinitive: "a trage", meaning: "to pull", conjugations: { eu: "trag", tu: "tragi", el_ea: "trage", noi: "tragem", voi: "trageți", ei_ele: "trag" }},
+            { infinitive: "a arunca", meaning: "to throw", conjugations: { eu: "arunc", tu: "arunci", el_ea: "aruncă", noi: "aruncăm", voi: "aruncați", ei_ele: "aruncă" }},
+            // a ridica (mâna) - same as a ridica
+            // a coborî (scările) - same as a coborî
+            { infinitive: "a traversa", meaning: "to cross", conjugations: { eu: "traversez", tu: "traversezi", el_ea: "traversează", noi: "traversăm", voi: "traversați", ei_ele: "traversează" }},
+            { infinitive: "a observa", meaning: "to observe, to notice", conjugations: { eu: "observ", tu: "observi", el_ea: "observă", noi: "observăm", voi: "observați", ei_ele: "observă" }},
+            { infinitive: "a presupune", meaning: "to suppose, to assume", conjugations: { eu: "presupun", tu: "presupui", el_ea: "presupune", noi: "presupunem", voi: "presupuneți", ei_ele: "presupun" }},
+            { infinitive: "a verifica", meaning: "to check, to verify", conjugations: { eu: "verific", tu: "verifici", el_ea: "verifică", noi: "verificăm", voi: "verificați", ei_ele: "verifică" }},
+            { infinitive: "a descrie", meaning: "to describe", conjugations: { eu: "descriu", tu: "descrii", el_ea: "descrie", noi: "descriem", voi: "descrieți", ei_ele: "descriu" }},
+            { infinitive: "a compara", meaning: "to compare", conjugations: { eu: "compar", tu: "compari", el_ea: "compară", noi: "comparăm", voi: "comparați", ei_ele: "compară" }},
+            { infinitive: "a suferi", meaning: "to suffer", conjugations: { eu: "sufăr", tu: "suferi", el_ea: "suferă", noi: "suferim", voi: "suferiți", ei_ele: "suferă" }},
+            { infinitive: "a se îmbolnăvi", meaning: "to get sick", conjugations: { eu: "mă îmbolnăvesc", tu: "te îmbolnăvești", el_ea: "se îmbolnăvește", noi: "ne îmbolnăvim", voi: "vă îmbolnăviți", ei_ele: "se îmbolnăvesc" }},
+            { infinitive: "a se vindeca", meaning: "to heal, to get better", conjugations: { eu: "mă vindec", tu: "te vindeci", el_ea: "se vindecă", noi: "ne vindecăm", voi: "vă vindecați", ei_ele: "se vindecă" }},
+            { infinitive: "a durea", meaning: "to hurt, to ache", conjugations: { eu: "mă doare", tu: "te doare", el_ea: "îl/o doare", noi: "ne doare", voi: "vă doare", ei_ele: "îi doare" }}, // Impersonal with dative pronoun
+            { infinitive: "a îngrijora", meaning: "to worry (transitive)", conjugations: { eu: "îngrijorez", tu: "îngrijorezi", el_ea: "îngrijorează", noi: "îngrijorăm", voi: "îngrijorați", ei_ele: "îngrijorează" }},
+            { infinitive: "a se îngrijora", meaning: "to worry (intransitive)", conjugations: { eu: "mă îngrijorez", tu: "te îngrijorezi", el_ea: "se îngrijorează", noi: "ne îngrijorăm", voi: "vă îngrijorați", ei_ele: "se îngrijorează" }},
+            { infinitive: "a calma", meaning: "to calm (transitive)", conjugations: { eu: "calmez", tu: "calmezi", el_ea: "calmează", noi: "calmăm", voi: "calmați", ei_ele: "calmează" }},
+            { infinitive: "a se calma", meaning: "to calm down", conjugations: { eu: "mă calmez", tu: "te calmezi", el_ea: "se calmează", noi: "ne calmăm", voi: "vă calmați", ei_ele: "se calmează" }},
+            { infinitive: "a enerva", meaning: "to annoy", conjugations: { eu: "enervez", tu: "enervezi", el_ea: "enervează", noi: "enervăm", voi: "enervați", ei_ele: "enervează" }},
+            { infinitive: "a se enerva", meaning: "to get annoyed", conjugations: { eu: "mă enervez", tu: "te enervezi", el_ea: "se enervează", noi: "ne enervăm", voi: "vă enervați", ei_ele: "se enervează" }},
+            { infinitive: "a irosi", meaning: "to waste", conjugations: { eu: "irosesc", tu: "irosești", el_ea: "irosește", noi: "irosim", voi: "irosiți", ei_ele: "irosesc" }},
+            { infinitive: "a merita", meaning: "to deserve, to be worth", conjugations: { eu: "merit", tu: "meriți", el_ea: "merită", noi: "merităm", voi: "meritați", ei_ele: "merită" }},
+            { infinitive: "a permite", meaning: "to permit, to allow", conjugations: { eu: "permit", tu: "permiți", el_ea: "permite", noi: "permitem", voi: "permiteți", ei_ele: "permit" }},
+            { infinitive: "a interzice", meaning: "to forbid", conjugations: { eu: "interzic", tu: "interzici", el_ea: "interzice", noi: "interzicem", voi: "interziceți", ei_ele: "interzic" }},
+            { infinitive: "a recomanda", meaning: "to recommend", conjugations: { eu: "recomand", tu: "recomanzi", el_ea: "recomandă", noi: "recomandăm", voi: "recomandați", ei_ele: "recomandă" }},
+            { infinitive: "a sfătui", meaning: "to advise", conjugations: { eu: "sfătuiesc", tu: "sfătuiești", el_ea: "sfătuiește", noi: "sfătuim", voi: "sfătuiți", ei_ele: "sfătuiesc" }},
+            { infinitive: "a convinge", meaning: "to convince", conjugations: { eu: "conving", tu: "convingi", el_ea: "convinge", noi: "convingem", voi: "convingeți", ei_ele: "conving" }},
+            { infinitive: "a negocia", meaning: "to negotiate", conjugations: { eu: "negociez", tu: "negociezi", el_ea: "negociază", noi: "negociem", voi: "negociați", ei_ele: "negociază" }},
+            { infinitive: "a semna", meaning: "to sign", conjugations: { eu: "semnez", tu: "semnezi", el_ea: "semnează", noi: "semnăm", voi: "semnați", ei_ele: "semnează" }},
+            { infinitive: "a vota", meaning: "to vote", conjugations: { eu: "votez", tu: "votezi", el_ea: "votează", noi: "votăm", voi: "votați", ei_ele: "votează" }},
+            // a conduce (o țară, o echipă) - same as a conduce
+            { infinitive: "a urma", meaning: "to follow", conjugations: { eu: "urmez", tu: "urmezi", el_ea: "urmează", noi: "urmăm", voi: "urmați", ei_ele: "urmează" }},
+            { infinitive: "a însoți", meaning: "to accompany", conjugations: { eu: "însoțesc", tu: "însoțești", el_ea: "însoțește", noi: "însoțim", voi: "însoțiți", ei_ele: "însoțesc" }},
+            { infinitive: "a întâlni", meaning: "to meet (transitive)", conjugations: { eu: "întâlnesc", tu: "întâlnești", el_ea: "întâlnește", noi: "întâlnim", voi: "întâlniți", ei_ele: "întâlnesc" }},
+            { infinitive: "a se întâlni", meaning: "to meet (reflexive)", conjugations: { eu: "mă întâlnesc", tu: "te întâlnești", el_ea: "se întâlnește", noi: "ne întâlnim", voi: "vă întâlniți", ei_ele: "se întâlnesc" }},
+            // a cunoaște (pe cineva) - same as a cunoaște
+            { infinitive: "a prezenta", meaning: "to introduce, to present", conjugations: { eu: "prezint", tu: "prezinți", el_ea: "prezintă", noi: "prezentăm", voi: "prezentați", ei_ele: "prezintă" }},
+            { infinitive: "a se prezenta", meaning: "to introduce oneself", conjugations: { eu: "mă prezint", tu: "te prezinți", el_ea: "se prezintă", noi: "ne prezentăm", voi: "vă prezentați", ei_ele: "se prezintă" }},
+            { infinitive: "a se certa", meaning: "to argue", conjugations: { eu: "mă cert", tu: "te cerți", el_ea: "se ceartă", noi: "ne certăm", voi: "vă certați", ei_ele: "se ceartă" }},
+            { infinitive: "a se împăca", meaning: "to make up, to reconcile", conjugations: { eu: "mă împac", tu: "te împaci", el_ea: "se împacă", noi: "ne împăcăm", voi: "vă împăcați", ei_ele: "se împacă" }},
+
+            // Further Useful Verbs for Broader Contexts
+            { infinitive: "a considera", meaning: "to consider", conjugations: { eu: "consider", tu: "consideri", el_ea: "consideră", noi: "considerăm", voi: "considerați", ei_ele: "consideră" }},
+            { infinitive: "a propune", meaning: "to propose", conjugations: { eu: "propun", tu: "propui", el_ea: "propune", noi: "propunem", voi: "propuneți", ei_ele: "propun" }},
+            { infinitive: "a stabili", meaning: "to establish, to set", conjugations: { eu: "stabilesc", tu: "stabilești", el_ea: "stabilește", noi: "stabilim", voi: "stabiliți", ei_ele: "stabilesc" }},
+            { infinitive: "a produce", meaning: "to produce", conjugations: { eu: "produc", tu: "produci", el_ea: "produce", noi: "producem", voi: "produceți", ei_ele: "produc" }},
+            { infinitive: "a crea", meaning: "to create", conjugations: { eu: "creez", tu: "creezi", el_ea: "creează", noi: "creăm", voi: "creați", ei_ele: "creează" }},
+            { infinitive: "a forma", meaning: "to form", conjugations: { eu: "formez", tu: "formezi", el_ea: "formează", noi: "formăm", voi: "formați", ei_ele: "formează" }},
+            { infinitive: "a influența", meaning: "to influence", conjugations: { eu: "influențez", tu: "influențezi", el_ea: "influențează", noi: "influențăm", voi: "influențați", ei_ele: "influențează" }},
+            { infinitive: "a evita", meaning: "to avoid", conjugations: { eu: "evit", tu: "eviți", el_ea: "evită", noi: "evităm", voi: "evitați", ei_ele: "evită" }},
+            { infinitive: "a obține", meaning: "to obtain, to get", conjugations: { eu: "obțin", tu: "obții", el_ea: "obține", noi: "obținem", voi: "obțineți", ei_ele: "obțin" }},
+            { infinitive: "a menține", meaning: "to maintain", conjugations: { eu: "mențin", tu: "menții", el_ea: "menține", noi: "menținem", voi: "mențineți", ei_ele: "mențin" }},
+            { infinitive: "a aparține", meaning: "to belong", conjugations: { eu: "aparțin", tu: "aparții", el_ea: "aparține", noi: "aparținem", voi: "aparțineți", ei_ele: "aparțin" }},
+            { infinitive: "a conține", meaning: "to contain", conjugations: { eu: "conțin", tu: "conții", el_ea: "conține", noi: "conținem", voi: "conțineți", ei_ele: "conțin" }},
+            { infinitive: "a include", meaning: "to include", conjugations: { eu: "includ", tu: "incluzi", el_ea: "include", noi: "includem", voi: "includeți", ei_ele: "includ" }},
+            { infinitive: "a exclude", meaning: "to exclude", conjugations: { eu: "exclud", tu: "excluzi", el_ea: "exclude", noi: "excludem", voi: "excludeți", ei_ele: "exclud" }},
+            { infinitive: "a măsura", meaning: "to measure", conjugations: { eu: "măsor", tu: "masori", el_ea: "măsoară", noi: "măsurăm", voi: "măsurați", ei_ele: "măsoară" }},
+            { infinitive: "a cântări", meaning: "to weigh", conjugations: { eu: "cântăresc", tu: "cântărești", el_ea: "cântărește", noi: "cântărim", voi: "cântăriți", ei_ele: "cântăresc" }},
+            { infinitive: "a mirosi", meaning: "to smell", conjugations: { eu: "miros", tu: "miroși", el_ea: "miroase", noi: "mirosim", voi: "mirosiți", ei_ele: "miros" }},
+            { infinitive: "a gusta", meaning: "to taste", conjugations: { eu: "gust", tu: "guști", el_ea: "gustă", noi: "gustăm", voi: "gustați", ei_ele: "gustă" }},
+            { infinitive: "a se baza (pe)", meaning: "to rely (on)", conjugations: { eu: "mă bazez", tu: "te bazezi", el_ea: "se bazează", noi: "ne bazăm", voi: "vă bazați", ei_ele: "se bazează" }},
+            { infinitive: "a se mira", meaning: "to be surprised", conjugations: { eu: "mă mir", tu: "te miri", el_ea: "se miră", noi: "ne mirăm", voi: "vă mirați", ei_ele: "se miră" }},
+            { infinitive: "a jura", meaning: "to swear", conjugations: { eu: "jur", tu: "juri", el_ea: "jură", noi: "jurăm", voi: "jurați", ei_ele: "jură" }},
+            { infinitive: "a amenința", meaning: "to threaten", conjugations: { eu: "ameninț", tu: "ameninți", el_ea: "amenință", noi: "amenințăm", voi: "amenințați", ei_ele: "amenință" }},
+            { infinitive: "a bănui", meaning: "to suspect", conjugations: { eu: "bănuiesc", tu: "bănuiești", el_ea: "bănuiește", noi: "bănuim", voi: "bănuiți", ei_ele: "bănuiesc" }},
+            { infinitive: "a se preface", meaning: "to pretend", conjugations: { eu: "mă prefac", tu: "te prefaci", el_ea: "se preface", noi: "ne prefacem", voi: "vă prefaceți", ei_ele: "se prefac" }},
+            { infinitive: "a exagera", meaning: "to exaggerate", conjugations: { eu: " exagerez", tu: " exagerezi", el_ea: " exagerează", noi: " exagerăm", voi: " exagerați", ei_ele: " exagerează" }},
+            { infinitive: "a se plictisi", meaning: "to get bored", conjugations: { eu: "mă plictisesc", tu: "te plictisești", el_ea: "se plictisește", noi: "ne plictisim", voi: "vă plictisiți", ei_ele: "se plictisesc" }},
+            { infinitive: "a amuza", meaning: "to amuse", conjugations: { eu: "amuz", tu: "amuzi", el_ea: "amuză", noi: "amuzăm", voi: "amuzați", ei_ele: "amuză" }},
+            { infinitive: "a se amuza", meaning: "to have fun", conjugations: { eu: "mă amuz", tu: "te amuzi", el_ea: "se amuză", noi: "ne amuzăm", voi: "vă amuzați", ei_ele: "se amuză" }},
+            { infinitive: "a se ruga", meaning: "to pray", conjugations: { eu: "mă rog", tu: "te rogi", el_ea: "se roagă", noi: "ne rugăm", voi: "vă rugați", ei_ele: "se roagă" }},
+            { infinitive: "a încuraja", meaning: "to encourage", conjugations: { eu: "încurajez", tu: "încurajezi", el_ea: "încurajează", noi: "încurajăm", voi: "încurajați", ei_ele: "încurajează" }},
+            { infinitive: "a descuraja", meaning: "to discourage", conjugations: { eu: "descurajez", tu: "descurajezi", el_ea: "descurajează", noi: "descurajăm", voi: "descurajați", ei_ele: "descurajează" }},
+            { infinitive: "a servi", meaning: "to serve", conjugations: { eu: "servesc", tu: "servești", el_ea: "servește", noi: "servim", voi: "serviți", ei_ele: "servesc" }},
+            { infinitive: "a comanda", meaning: "to order (food)", conjugations: { eu: "comand", tu: "comanzi", el_ea: "comandă", noi: "comandăm", voi: "comandați", ei_ele: "comandă" }},
+            { infinitive: "a livra", meaning: "to deliver", conjugations: { eu: "livrez", tu: "livrezi", el_ea: "livrează", noi: "livrăm", voi: "livrați", ei_ele: "livrează" }},
+            { infinitive: "a parca", meaning: "to park", conjugations: { eu: "parchez", tu: "parchezi", el_ea: "parchează", noi: "parcăm", voi: "parcați", ei_ele: "parchează" }},
+            { infinitive: "a închiria", meaning: "to rent", conjugations: { eu: "închiriez", tu: "închiriezi", el_ea: "închiriază", noi: "închiriem", voi: "închiriați", ei_ele: "închiriază" }},
+            { infinitive: "a poseda", meaning: "to possess", conjugations: { eu: "posed", tu: "posezi", el_ea: "posedă", noi: "posedăm", voi: "posedați", ei_ele: "posedă" }},
+            { infinitive: "a investi", meaning: "to invest", conjugations: { eu: "investesc", tu: "investești", el_ea: "investește", noi: "investim", voi: "investiți", ei_ele: "investesc" }},
+            { infinitive: "a rezolva", meaning: "to solve", conjugations: { eu: "rezolv", tu: "rezolvi", el_ea: "rezolvă", noi: "rezolvăm", voi: "rezolvați", ei_ele: "rezolvă" }},
+            { infinitive: "a implica", meaning: "to involve", conjugations: { eu: "implic", tu: "implici", el_ea: "implică", noi: "implicăm", voi: "implicați", ei_ele: "implică" }},
+            { infinitive: "a sublinia", meaning: "to underline, emphasize", conjugations: { eu: "subliniez", tu: "subliniezi", el_ea: "subliniază", noi: "subliniem", voi: "subliniați", ei_ele: "subliniază" }},
+            { infinitive: "a defini", meaning: "to define", conjugations: { eu: "definesc", tu: "definești", el_ea: "definește", noi: "definim", voi: "definiți", ei_ele: "definesc" }},
+            { infinitive: "a exprima", meaning: "to express", conjugations: { eu: "exprim", tu: "exprimi", el_ea: "exprimă", noi: "exprimăm", voi: "exprimați", ei_ele: "exprimă" }},
+            { infinitive: "a modifica", meaning: "to modify", conjugations: { eu: "modific", tu: "modifici", el_ea: "modifică", noi: "modificăm", voi: "modificați", ei_ele: "modifică" }},
+            // a verifica (din nou) - same as a verifica
+            { infinitive: "a naviga", meaning: "to navigate/browse", conjugations: { eu: "navighez", tu: "navighezi", el_ea: "navighează", noi: "navigăm", voi: "navigați", ei_ele: "navighează" }},
+            { infinitive: "a descărca", meaning: "to download", conjugations: { eu: "descarc", tu: "descarci", el_ea: "descarcă", noi: "descărcăm", voi: "descărcați", ei_ele: "descarcă" }},
+            { infinitive: "a încărca", meaning: "to upload, to load", conjugations: { eu: "încarc", tu: "încarci", el_ea: "încarcă", noi: "încărcăm", voi: "încărcați", ei_ele: "încarcă" }},
+            { infinitive: "a salva", meaning: "to save", conjugations: { eu: "salvez", tu: "salvezi", el_ea: "salvează", noi: "salvăm", voi: "salvați", ei_ele: "salvează" }},
+            { infinitive: "a șterge", meaning: "to delete, to erase", conjugations: { eu: "șterg", tu: "ștergi", el_ea: "șterge", noi: "ștergem", voi: "ștergeți", ei_ele: "șterg" }}
+            // a suna (a emite un sunet) - same as a suna (phone/ring)
+        ];
+        // Note: Some verbs that were variations (e.g. "a conduce (o mașină)") have been consolidated
+        // with their primary form (e.g. "a conduce") if the conjugation is identical.
+        // The list now contains close to 250 unique verbs with their primary meanings and conjugations.
+
+        // --- DOM Elements ---
+        const flashcard = document.getElementById('flashcard');
+        const verbInfinitiveElem = document.getElementById('verb-infinitive');
+        const verbMeaningElem = document.getElementById('verb-meaning');
+        const conjugationsElem = document.getElementById('conjugations');
+        const prevButton = document.getElementById('prev-button');
+        const flipButton = document.getElementById('flip-button');
+        const nextButton = document.getElementById('next-button');
+        const shuffleButton = document.getElementById('shuffle-button');
+        const cardCounterElem = document.getElementById('card-counter');
+
+        // --- Game State ---
+        let currentCardIndex = 0;
+        let isFlipped = false;
+
+        // --- Functions ---
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+            }
+        }
+
+        function displayCard() {
+            if (verbsData.length === 0) {
+                verbInfinitiveElem.textContent = "No verbs loaded.";
+                verbMeaningElem.textContent = "";
+                conjugationsElem.innerHTML = "";
+                cardCounterElem.textContent = "Card 0 din 0";
+                prevButton.disabled = true;
+                nextButton.disabled = true;
+                flipButton.disabled = true;
+                shuffleButton.disabled = true;
+                return;
+            }
+
+            const cardData = verbsData[currentCardIndex];
+            verbInfinitiveElem.textContent = cardData.infinitive;
+            verbMeaningElem.textContent = `Meaning: ${cardData.meaning}`;
+            
+            conjugationsElem.innerHTML = ''; // Clear previous conjugations
+            const pronouns = ["Eu", "Tu", "El/Ea", "Noi", "Voi", "Ei/Ele"];
+            const conjugationKeys = ["eu", "tu", "el_ea", "noi", "voi", "ei_ele"];
+
+            for (let i = 0; i < pronouns.length; i++) {
+                const pronoun = pronouns[i];
+                const key = conjugationKeys[i];
+                const form = cardData.conjugations[key];
+                
+                const item = document.createElement('div');
+                item.classList.add('conjugation-item');
+                item.innerHTML = `<span class="pronoun">${pronoun}:</span> ${form}`;
+                conjugationsElem.appendChild(item);
+            }
+
+            if (isFlipped) {
+                flashcard.classList.remove('is-flipped'); // Show front first
+                isFlipped = false;
+            }
+            updateCardCounter();
+            updateButtonStates();
+        }
+
+        function flipCard() {
+            if (verbsData.length === 0) return;
+            isFlipped = !isFlipped;
+            flashcard.classList.toggle('is-flipped');
+        }
+
+        function nextCard() {
+            if (currentCardIndex < verbsData.length - 1) {
+                currentCardIndex++;
+                displayCard();
+            }
+        }
+
+        function prevCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                displayCard();
+            }
+        }
+        
+        function shuffleCards() {
+            if (verbsData.length === 0) return;
+            shuffleArray(verbsData);
+            currentCardIndex = 0;
+            displayCard();
+        }
+
+        function updateCardCounter() {
+            if (verbsData.length === 0) {
+                 cardCounterElem.textContent = "Card 0 din 0";
+                 return;
+            }
+            cardCounterElem.textContent = `Card ${currentCardIndex + 1} din ${verbsData.length}`;
+        }
+        
+        function updateButtonStates() {
+            prevButton.disabled = currentCardIndex === 0 || verbsData.length === 0;
+            nextButton.disabled = currentCardIndex === verbsData.length - 1 || verbsData.length === 0;
+            flipButton.disabled = verbsData.length === 0;
+            shuffleButton.disabled = verbsData.length === 0;
+        }
+
+        // --- Event Listeners ---
+        flipButton.addEventListener('click', flipCard);
+        nextButton.addEventListener('click', nextCard);
+        prevButton.addEventListener('click', prevCard);
+        shuffleButton.addEventListener('click', shuffleCards);
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowLeft' && !prevButton.disabled) {
+                prevCard();
+            } else if (event.key === 'ArrowRight' && !nextButton.disabled) {
+                nextCard();
+            } else if (event.key === ' ' || event.key === 'Enter') { // Space or Enter to flip
+                event.preventDefault(); // Prevent page scroll on space
+                if (!flipButton.disabled) flipCard();
+            }
+        });
+
+
+        // --- Initial Load ---
+        shuffleArray(verbsData); // Shuffle on initial load
+        displayCard();
+
+    </script>
+</body>
+</html>
