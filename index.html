@@ -569,6 +569,7 @@
         nextButton.addEventListener('click', nextCard);
         prevButton.addEventListener('click', prevCard);
         shuffleButton.addEventListener('click', shuffleCards);
+        flashcard.addEventListener('click', flipCard); // Allow clicking the card itself to flip
         
         // Keyboard navigation
         document.addEventListener('keydown', (event) => {
